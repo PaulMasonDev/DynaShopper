@@ -44,12 +44,13 @@ router.put('/', (req, res) => {
                 res.redirect('/'); 
               }
             });
-          } else { // Otherwise create a brand list with the item in it.
+          } else { // Otherwise create a brand new list with the item in it.
               List.create({
                 name: foundList.name,
                 items: [req.body.item],
                 author: req.user._id
               });
+              res.redirect('/');
           } 
         });
       }
@@ -62,24 +63,49 @@ router.get('/createList', (req, res) => {
 });
 
 router.put('/createList', (req, res) => {
-  MasterList.create({name: req.body.list}, (err) => {
+  MasterList.findOne({name: req.body.list}, (err, foundMasterList) => { //See if a master list with the same name is already existing
     if(err){
-      console.log(err);
-    } else { 
-      MasterList.findOneAndUpdate({name: req.body.list},{$push: {items: req.body.item}}, (err, foundList) => {
-        if(err){
-          console.log(err);
-        } else {
-          List.create({
+      console.log(err)
+    } else if(foundMasterList){ // If there is an existing list with that name, push the item into the items array.
+        MasterList.findOneAndUpdate({name: req.body.list}, {$push: {items: req.body.item}}, (err, found) => {
+          if(err){
+            console.log(err);
+          }
+        });
+      } else {
+        //create new Master list
+          MasterList.create({
             name: req.body.list,
-            author: req.user._id,
             items: [req.body.item]
-          });
-          res.redirect('/');
+          }, (err) => {
+            if(err){
+              console.log(err);
+            } 
+          });   
+      } // And then check to see if you already have a personal list of that type
+      List.findOne({name:req.body.list, author: req.user._id}, (err, foundPersonalList) => {
+      if(err){
+        console.log(err);
+      } else if(foundPersonalList){ // If it exists, push the new item into the items array
+        console.log('PUTTING')
+        List.findOneAndUpdate({name:req.body.list, author: req.user._id}, {$push: {items:req.body.item}}, (err, item) => {
+          if(err){
+            console.log(err);
+          }
+        });
+      } else { // If it doesn't exist, create a new list and push the item in the items array.
+      console.log('NOT PUTTING');
+        List.create({
+          name: req.body.list,
+          author: req.user._id,
+          items: [req.body.item]
+        });
+      }
+      res.redirect('/'); // Go back to the home
+    });           
         }
-      });     
-    }
-  });
-});
+      );     
+    });
+
 
 module.exports = router;
