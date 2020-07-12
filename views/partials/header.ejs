@@ -10,13 +10,13 @@
     <nav>
       <div class="container">
         <ul class="navbar">
-          <li><a href="/landing">Home</a></li>
-          <li><a href="/register">Register</a></li>
-          <li><a href="/login">Login</a></li>
+          <li><a href="/">Home</a></li>
           <% if(currentUser){ %>
             <li><a href="/">Signed in as: <%= currentUser.username %></a></li>
+            <li><a href="/logout">Logout</a></li>
           <% } else { %>
-            <li><a href="/">Not currently signed in.</a></li>
+            <li><a href="/register">Register</a></li>
+            <li><a href="/login">Login</a></li>
           <% } %>
         </ul>
       </div>

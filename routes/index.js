@@ -6,50 +6,58 @@ const Item = require('../models/item');
 const List = require('../models/list');
 const MasterList = require('../models/masterlist');
 
-
-// const list = new List({});
-// list.save();
+router.get('/testing', (req, res) => {
+    
+});
 
 router.get('/', (req, res) => {
-  List.findOne({name: 'default'}, (err, foundList) => {
-    if(err){
-      console.log(err);
-    } else {
-        res.render('landing', {items: foundList.items});
+  if(req.user){
+    List.find({author: req.user._id}, (err, foundList) => {
+      console.log('List of all lists that have been authored by you', foundList);
+      if(foundList){
+        res.render('landing', {list: foundList})
+      } else {
+        res.render('landing', {list: []})
       }
-  });  
+    });
+  } else {
+      res.render('landing', {list:[]})
+  }   
 });
-// const list = new List({
-//   name: 'dairy'
-// });
-// list.save();
 
 router.put('/', (req, res) => { 
-  List.findOne({items: req.body.item}, (err, foundList) => {
+  MasterList.findOne({items: req.body.item}, (err, foundList) => { // Look for item in the Master list available to all users.
     if(err){
       console.log(err)
     } else {
-      if(!foundList){
+      if(!foundList){ // If no master list is found, than user creates one
         res.render('createList', {item: req.body.item});
-        
-        //Is it a master? Yes create local instance and then:
-        
-        //Is local instance of list made?
-          //If yes, push items to list
-          //else create a local list
-          //then push item to list
-          //then redirect
-      } else if(foundList && !foundList.isMaster){
-
-      } else {
-        //ask user for list name and create and also create a local instance and push item to list
+      } else if(foundList){ // If a master list has the item in it
+        List.findOne({name: foundList.name, author: req.user._id}, (err, foundPersonalList) => { // Check to see if there is already a personal list with the same category name
+          if(err){
+            console.log(err);
+          } else if(foundPersonalList){ // If there is already a personal list, push the item into the items array of that list and redirect to home.
+            List.findByIdAndUpdate(foundPersonalList._id, {$push: {items: req.body.item}}, (err, list)=> {
+              if(err){
+                console.log(err);
+              } else {
+                res.redirect('/'); 
+              }
+            });
+          } else { // Otherwise create a brand list with the item in it.
+              List.create({
+                name: foundList.name,
+                items: [req.body.item],
+                author: req.user._id
+              });
+          } 
+        });
       }
-      // res.redirect('/');
     }
   });
 });
 
-router.get('createList', (req, res) => {
+router.get('/createList', (req, res) => {
   res.render('createList');
 });
 
@@ -61,7 +69,7 @@ router.put('/createList', (req, res) => {
       MasterList.findOneAndUpdate({name: req.body.list},{$push: {items: req.body.item}}, (err, foundList) => {
         if(err){
           console.log(err);
-        } else{
+        } else {
           List.create({
             name: req.body.list,
             author: req.user._id,

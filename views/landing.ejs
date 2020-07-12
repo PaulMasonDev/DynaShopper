@@ -7,11 +7,13 @@
   <input type="submit" value="Submit">
 </form>
 
-<ul>
-  <% items.forEach((item) => { %>
-    <li><%= item %></li>
+<% list.forEach((list) => { %>
+  <h3><%= list.name %></h3>
+  <ul>
+  <% list.items.forEach((item) => { %>
+    <li><%=item%></li>
   <% }); %>
-</ul>
-
+  </ul> 
+<% }); %>
 
 <%- include("./partials/footer"); %>

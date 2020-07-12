@@ -24,7 +24,8 @@ router.get('/register', (req, res) => {
 
 router.post('/register', (req, res) => {
   let newUser = new User({
-    username: req.body.username
+    username: req.body.username,
+    email: req.body.email
   });
 
   User.register(newUser, req.body.password, (err, user) => {
@@ -35,6 +36,11 @@ router.post('/register', (req, res) => {
       res.redirect('/');
     });         
   });
+});
+
+router.get('/logout', (req, res) => {
+  req.logout();
+  res.redirect('/');
 });
 
 module.exports = router;
