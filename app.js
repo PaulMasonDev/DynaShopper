@@ -11,7 +11,8 @@ const express            = require('express'),
 require('dotenv').config();
 
 // Schema Imports
-const User = require("./models/user");
+const User = require('./models/user');
+
 
 // Environmental variables
 const port = process.env.PORT;
