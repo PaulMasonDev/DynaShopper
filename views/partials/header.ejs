@@ -7,4 +7,18 @@
     <link rel="stylesheet" href="css/styles.css">
   </head>
   <body>
+    <nav>
+      <div class="container">
+        <ul class="navbar">
+          <li><a href="/landing">Home</a></li>
+          <li><a href="/register">Register</a></li>
+          <li><a href="/login">Login</a></li>
+          <% if(currentUser){ %>
+            <li><a href="/">Signed in as: <%= currentUser.username %></a></li>
+          <% } else { %>
+            <li><a href="/">Not currently signed in.</a></li>
+          <% } %>
+        </ul>
+      </div>
+    </nav>
   

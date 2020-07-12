@@ -5,8 +5,10 @@ const express            = require('express'),
       methodOverride     = require('method-override'),
       mongoose           = require('mongoose'),
       flash              = require('connect-flash'),
-      cookieParser       = require('cookie-parser');
-      
+      passport           = require('passport'),
+      cookieParser       = require('cookie-parser'),
+      LocalStrategy      = require('passport-local');
+
 
 require('dotenv').config();
 
@@ -37,6 +39,17 @@ app.use(require("express-session")({
   saveUninitialized: false
 }));
 
+// Passport Config
+app.use(passport.initialize());
+app.use(passport.session());
+
+
+//Strategies
+passport.use(new LocalStrategy(User.authenticate()));
+
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());
+
 app.set("view engine", "ejs");
 app.use(express.static(__dirname + "/public"));
 app.use(cookieParser());
@@ -55,11 +68,12 @@ app.use(function(req, res, next){
 app.use(express.static('public'));
 
 // Route Imports
-const passportRoutes = require('./routes/passport');
-const indexRoutes = require('./routes/index');
 
-app.use('/', passportRoutes);
+const indexRoutes = require('./routes/index');
+const authRoutes = require('./routes/auth');
+
 app.use('/', indexRoutes);
+app.use('/', authRoutes);
 
 // Listening
 app.listen(port, (req, res) => {

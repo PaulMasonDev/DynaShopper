@@ -1,0 +1,13 @@
+<%- include("./partials/header"); %>
+
+<h1>Create List</h1>
+
+<form action="/createList?_method=PUT" method="POST">
+  <p>You would like to add <%=item%> to a new list</p>
+  <input type="text" name="list" id="list" placeholder="Enter list name">
+  <input type="text" name="item" value="<%=item%>" id="item" style="visibility:hidden;">
+  <input type="submit" value="Submit">
+</form>
+
+
+<%- include("./partials/footer"); %>
