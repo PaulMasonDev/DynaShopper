@@ -10,15 +10,20 @@
 <% list.forEach((list) => { %>
   <form action="/list?_method=DELETE" method="POST">
     <h3><%= list.name %></h3>
-    <button type="submit" value="<%= list.name %>">Delete Group</button>
+    <button type="submit" name="name" value="<%= list.name %>">Delete Group</button>
   </form>
   
   
   <ul class="item-group">
   <% list.items.forEach((item) => { %>
-    <form method="POST" action="/item?_method=PUT">
-      <li><input type="checkbox" onchange="this.form.submit()" name="item" id="item" value="<%=item%>"><%=item%></li>
-    </form>
+    <li>
+      <form method="POST" action="/itemremove?_method=PUT">
+        <input type="checkbox" onchange="this.form.submit()" name="item" id="item" value="<%=item%>">
+      </form>
+      <form action="/itemchange?_method=PUT" method="POST">
+        <input type="text" name="item" id="item" onchange="this.form.submit()" value="<%=item%>"><input style="display:none" type="text" name="oldItem" id="oldItem" value="<%=item%>">
+      </form>
+    </li>
   <% }); %>
   </ul> 
 <% }); %>

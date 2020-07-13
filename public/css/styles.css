@@ -34,3 +34,7 @@ body {
 .item-group li {
   list-style:none;
 }
+
+.item-group form {
+  display: inline;
+}

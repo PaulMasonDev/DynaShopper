@@ -111,16 +111,51 @@ router.put('/createList', (req, res) => {
       );     
     });
 
-//REMOVE ITEMS USING PUT ROUTE
-router.put('/item', (req, res) => {
+//UPDATE ITEMS ON A LIST
+router.put('/itemchange', (req, res) => {
   console.log(req.body.item);
-  List.findOneAndUpdate({items: req.body.item}, {$pull: {items: req.body.item}}, (err, updatedList) => {
+  console.log(req.body.oldItem);
+  const newItem = req.body.item;
+  const oldItem = req.body.oldItem;
+  
+  List.findOneAndUpdate({author: req.user.id, items: oldItem}, {$push: {items: newItem}}, (err, updatedList) => {
+    if(err){
+      console.log(err);
+    } else {
+      List.findOneAndUpdate({author: req.user.id, items: oldItem}, {$pull: {items: oldItem}}, (err, updatedList) => {
+        if(err){
+          console.log(err);
+        } else {
+          res.redirect('/');
+        }
+      });
+    }
+  });  
+});
+
+
+//REMOVE ITEMS USING PUT ROUTE
+router.put('/itemremove', (req, res) => {
+  console.log(req.body.item);
+  console.log(req.user.id);
+  List.findOneAndUpdate({author: req.user.id, items: req.body.item}, {$pull: {items: req.body.item}}, (err, updatedList) => {
     if(err){
       console.log(err);
     } else {
       res.redirect('/');
     }
   }); 
+});
+
+//REMOVE PERSONAL LISTS DELETE ROUTE
+router.delete('/list', (req, res) => {
+  List.findOneAndDelete({author: req.user.id, name: req.body.name}, (err, deletedList) => {
+    if(err){
+      console.log(err);
+    } else {
+      res.redirect('/');
+    }
+  });
 });
 
 module.exports = router;
