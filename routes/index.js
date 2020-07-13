@@ -1,19 +1,20 @@
 const express      = require('express'),
       router       = express.Router();
+      
 
 // SCHEMA IMPORTS
 const Item = require('../models/item');
 const List = require('../models/list');
 const MasterList = require('../models/masterlist');
+const { findOneAndDelete } = require('../models/item');
 
 router.get('/testing', (req, res) => {
     
 });
-
+// SHOW All your Lits
 router.get('/', (req, res) => {
   if(req.user){
     List.find({author: req.user._id}, (err, foundList) => {
-      console.log('List of all lists that have been authored by you', foundList);
       if(foundList){
         res.render('landing', {list: foundList})
       } else {
@@ -25,6 +26,7 @@ router.get('/', (req, res) => {
   }   
 });
 
+// UPDATE LISTS WITH ITEMS
 router.put('/', (req, res) => { 
   MasterList.findOne({items: req.body.item}, (err, foundList) => { // Look for item in the Master list available to all users.
     if(err){
@@ -58,10 +60,12 @@ router.put('/', (req, res) => {
   });
 });
 
+//CREATE LIST
 router.get('/createList', (req, res) => {
   res.render('createList');
 });
 
+//UPDATE LIST
 router.put('/createList', (req, res) => {
   MasterList.findOne({name: req.body.list}, (err, foundMasterList) => { //See if a master list with the same name is already existing
     if(err){
@@ -107,5 +111,16 @@ router.put('/createList', (req, res) => {
       );     
     });
 
+//REMOVE ITEMS USING PUT ROUTE
+router.put('/item', (req, res) => {
+  console.log(req.body.item);
+  List.findOneAndUpdate({items: req.body.item}, {$pull: {items: req.body.item}}, (err, updatedList) => {
+    if(err){
+      console.log(err);
+    } else {
+      res.redirect('/');
+    }
+  }); 
+});
 
 module.exports = router;

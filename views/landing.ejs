@@ -8,10 +8,17 @@
 </form>
 
 <% list.forEach((list) => { %>
-  <h3><%= list.name %></h3>
-  <ul>
+  <form action="/list?_method=DELETE" method="POST">
+    <h3><%= list.name %></h3>
+    <button type="submit" value="<%= list.name %>">Delete Group</button>
+  </form>
+  
+  
+  <ul class="item-group">
   <% list.items.forEach((item) => { %>
-    <li><%=item%></li>
+    <form method="POST" action="/item?_method=PUT">
+      <li><input type="checkbox" onchange="this.form.submit()" name="item" id="item" value="<%=item%>"><%=item%></li>
+    </form>
   <% }); %>
   </ul> 
 <% }); %>

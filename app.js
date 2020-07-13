@@ -15,7 +15,6 @@ require('dotenv').config();
 // Schema Imports
 const User = require('./models/user');
 
-
 // Environmental variables
 const port = process.env.PORT;
 const host = process.env.HOST;

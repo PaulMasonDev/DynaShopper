@@ -30,3 +30,7 @@ body {
   background-color: #446190;
   color: #f4f4f4;
 }
+
+.item-group li {
+  list-style:none;
+}
