@@ -25,58 +25,65 @@ router.get('/', (req, res) => {
       res.render('landing', {list:[]})
   }   
 });
-
-// UPDATE LISTS WITH ITEMS
+MasterList.create({
+  name: "Dairy",
+  items: ['milk']
+});
+//UPDATE LISTS WITH ITEMS
 router.put('/', (req, res) => {
-  const newItem = req.body.item;
+  const newItem = toTitleCase(req.body.item);
   let foundMatch = false; // Init match Boolean
   MasterList.find({}, (err, allLists) => { //Lookup all lists  
-    allLists.forEach((list) => {
-      if(foundMatch === true){ // Break if match has already been found
-        return;
-      }
-      list.items.forEach((item) => {
-        if(newItem.includes(item)){ //if item is part of new item
-          foundMatch = true; // set boolean so loop can break
-          newListName = list.name;; // set the list name to be the list name that     matched the item
+    if(err){
+      console.log(err);
+    } else {
+      allLists.forEach((list) => {
+        if(foundMatch === true){ // Break if match has already been found
+          return;
+        }
+        list.items.forEach((item) => {
+          if(newItem.includes(item)){ //if item is part of new item
+            foundMatch = true; // set boolean so loop can break
+            newListName = list.name;; // set the list name to be the list name that  matched the item
+          } else {
+            newListName = '';
+          }
+        });
+      });
+      MasterList.findOne({$or: [
+        {items: newItem},
+        {name: newListName}
+      ]}, 
+      (err, foundList) => { // Look for item in the Master list available to all users.
+        if(err){
+          console.log(err)
+        } else if(foundList){
+          PersonalList.findOne({name: foundList.name, author: req.user._id}, (err, foundPersonalList) => { // Check to see if there is already a personal list with the same category name
+            if(err){
+              console.log(err);
+            } else if(foundPersonalList){ // If there is already a personal list, push the item into the items array of that list and redirect to home.
+              PersonalList.findOneAndUpdate({name: foundList.name, author: req.user._id}, {$push: {items: newItem}}, (err, list)=> {
+                if(err){
+                  console.log(err);
+                } else {
+                  res.redirect('/'); 
+                }
+              });
+            } else { // Otherwise create a brand new list with the item in it.
+                PersonalList.create({
+                  name: foundList.name,
+                  items: [newItem],
+                  author: req.user._id
+                });
+                res.redirect('/');
+            } 
+          });
         } else {
-          newListName = '';
+          res.render('createList', {item: newItem});
         }
       });
-    });
-
-    MasterList.findOne({$or: [
-      {items: newItem},
-      {name: newListName}
-    ]}, 
-    (err, foundList) => { // Look for item in the Master list available to all users.
-      if(err){
-        console.log(err)
-      } else if(foundList){
-        PersonalList.findOne({name: foundList.name, author: req.user._id}, (err, foundPersonalList) => { // Check to see if there is already a personal list with the same category name
-          if(err){
-            console.log(err);
-          } else if(foundPersonalList){ // If there is already a personal list, push the item into the items array of that list and redirect to home.
-            PersonalList.findOneAndUpdate({name: foundList.name, author: req.user._id}, {$push: {items: newItem}}, (err, list)=> {
-              if(err){
-                console.log(err);
-              } else {
-                res.redirect('/'); 
-              }
-            });
-          } else { // Otherwise create a brand new list with the item in it.
-              PersonalList.create({
-                name: foundList.name,
-                items: [newItem],
-                author: req.user._id
-              });
-              res.redirect('/');
-          } 
-        });
-      } else {
-        res.render('createList', {item: req.body.item});
-      }
-    });
+    }
+    
   });  
 });
 
@@ -87,11 +94,12 @@ router.get('/createList', (req, res) => {
 
 //UPDATE LIST
 router.put('/createList', (req, res) => {
-  MasterList.findOne({name: req.body.list}, (err, foundMasterList) => { //See if a master list with the same name is already existing
+  newList = toTitleCase(req.body.list);
+  MasterList.findOne({name: newList}, (err, foundMasterList) => { //See if a master list with the same name is already existing
     if(err){
       console.log(err)
     } else if(foundMasterList){ // If there is an existing list with that name, push the item into the items array.
-        MasterList.findOneAndUpdate({name: req.body.list}, {$push: {items: req.body.item}}, (err, found) => {
+        MasterList.findOneAndUpdate({name: newList}, {$push: {items: req.body.item}}, (err, found) => {
           if(err){
             console.log(err);
           }
@@ -99,7 +107,7 @@ router.put('/createList', (req, res) => {
       } else {
         //create new Master list
           MasterList.create({
-            name: req.body.list,
+            name: newList,
             items: [req.body.item]
           }, (err) => {
             if(err){
@@ -107,12 +115,12 @@ router.put('/createList', (req, res) => {
             } 
           });   
       } // And then check to see if you already have a personal list of that type
-      PersonalList.findOne({name:req.body.list, author: req.user._id}, (err, foundPersonalList) => {
+      PersonalList.findOne({name:newList, author: req.user._id}, (err, foundPersonalList) => {
       if(err){
         console.log(err);
       } else if(foundPersonalList){ // If it exists, push the new item into the items array
         console.log('PUTTING')
-        PersonalList.findOneAndUpdate({name:req.body.list, author: req.user._id}, {$push: {items:req.body.item}}, (err, item) => {
+        PersonalList.findOneAndUpdate({name:newList, author: req.user._id}, {$push: {items:req.body.item}}, (err, item) => {
           if(err){
             console.log(err);
           }
@@ -120,7 +128,7 @@ router.put('/createList', (req, res) => {
       } else { // If it doesn't exist, create a new list and push the item in the items array.
       console.log('NOT PUTTING');
         PersonalList.create({
-          name: req.body.list,
+          name: newList,
           author: req.user._id,
           items: [req.body.item]
         });
@@ -135,7 +143,7 @@ router.put('/createList', (req, res) => {
 router.put('/itemchange', (req, res) => {
   console.log(req.body.item);
   console.log(req.body.oldItem);
-  const newItem = req.body.item;
+  const newItem = toTitleCase(req.body.item);
   const oldItem = req.body.oldItem;
   
   PersonalList.findOneAndUpdate({author: req.user.id, items: oldItem}, {$push: {items: newItem}}, (err, updatedList) => {
@@ -177,5 +185,18 @@ router.delete('/list', (req, res) => {
     }
   });
 });
+//=========================
+// MIDDLEWARES
+//=========================
+
+//=========================
+function toTitleCase(str) {
+  return str.replace(
+      /\w\S*/g,
+      function(txt) {
+          return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      }
+  );
+}
 
 module.exports = router;
