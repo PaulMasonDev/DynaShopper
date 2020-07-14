@@ -25,10 +25,10 @@ router.get('/', (req, res) => {
       res.render('landing', {list:[]})
   }   
 });
-MasterList.create({
-  name: "Dairy",
-  items: ['milk']
-});
+// MasterList.create({
+//   name: "Dairy",
+//   items: ['milk']
+// });
 //UPDATE LISTS WITH ITEMS
 router.put('/', (req, res) => {
   const newItem = toTitleCase(req.body.item);

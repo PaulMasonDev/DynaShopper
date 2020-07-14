@@ -1,34 +1,47 @@
 <%- include("./partials/header"); %>
 
-<h1>Dyna Shopper</h1>
-<% if(currentUser){%>
+<div class="container">
+  <h1>Dyna Shopper</h1>
+  
+    <% if(currentUser){%>
+  
   <form action="/?_method=PUT" method="POST">
-    <input type="text" name="item" id="item" placeholder="Enter a new item">
-    <input type="submit" value="Submit">
+    <div class="input-field">
+      <label for="item">Enter a new item</label>
+      <input class="validate" type="text" name="item" id="item">
+      <button type="submit" class="btn-floating btn-large waves-effect waves-light green"><i class="material-icons">add</i></button>
+    </div>
   </form>
+
+  <div class="row">
   <% list.forEach((list) => { %>
-    <form action="/list?_method=DELETE" method="POST">
-      <h3><%= list.name %></h3>
-      <button type="submit" name="name" value="<%= list.name %>">Delete Group</button>
-    </form>
-      
-    <ul class="item-group">
-    <% list.items.forEach((item) => { %>
-      <li>
-        <form method="POST" action="/itemremove?_method=PUT">
-          <input type="checkbox" onchange="this.form.submit()" name="item" id="item" value="<%=item%>">
-        </form>
-        <form action="/itemchange?_method=PUT" method="POST">
-          <input type="text" name="item" id="item" onchange="this.form.submit()" value="<%=item%>"><input style="display:none" type="text" name="oldItem" id="oldItem" value="<%=item%>">
-        </form>
-      </li>
-    <% }); %>
-    </ul> 
+    <div class="col s12 m6 l4">
+      <form action="/list?_method=DELETE" method="POST">
+        <h3>
+          <button class="btn-floating btn-small waves-effect waves-light red" type="submit" name="name" value="<%= list.name %>"><i class="material-icons">clear</i></button>
+          &nbsp;<%= list.name %>
+        </h3>
+      </form>
+        
+      <ul class="item-group">
+      <% list.items.forEach((item) => { %>
+        <li>
+          <form method="POST" action="/itemremove?_method=PUT">
+            <button class="btn-floating btn-small waves-effect waves-light red" type="submit" name="item" value="<%=item%>"><i class="material-icons">clear</i></button>
+          </form>
+          <form action="/itemchange?_method=PUT" method="POST">
+            <input type="text" name="item" id="item" onchange="this.form.submit()" value="&emsp;<%= item %>"><input style="display:none" type="text" name="oldItem" id="oldItem" value="<%= item %>">
+          </form>
+        </li>
+      <% }); %>
+      </ul>
+    </div>
   <% }); %>
 <% } else { %>
-  <p>Please login to get started</p>
+  <h3>Please <a href="/login">login</a> to get started</h3>
   <% } %>
+  </div>
 
-
+</div>
 
 <%- include("./partials/footer"); %>
