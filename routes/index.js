@@ -55,7 +55,7 @@ router.put('/', (req, res) => {
           if(err){
             console.log(err);
           } else if(foundPersonalList){ // If there is already a personal list, push the item into the items array of that list and redirect to home.
-            PersonalList.findByIdAndUpdate(foundPersonalList._id, {$push: {items: newItem}}, (err, list)=> {
+            PersonalList.findOneAndUpdate({name: foundList.name, author: req.user._id}, {$push: {items: newItem}}, (err, list)=> {
               if(err){
                 console.log(err);
               } else {
