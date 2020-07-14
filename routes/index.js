@@ -39,6 +39,8 @@ router.put('/', (req, res) => {
         if(newItem.includes(item)){ //if item is part of new item
           foundMatch = true; // set boolean so loop can break
           newListName = list.name;; // set the list name to be the list name that     matched the item
+        } else {
+          newListName = '';
         }
       });
     });
