@@ -75,7 +75,7 @@ app.use('/', indexRoutes);
 app.use('/', authRoutes);
 
 // Listening
-app.listen(port, (req, res) => {
+app.listen(port || 3007, (req, res) => {
   console.log("Listening on port " + port);
   
 });
