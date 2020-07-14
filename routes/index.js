@@ -4,7 +4,7 @@ const express      = require('express'),
 
 // SCHEMA IMPORTS
 const Item = require('../models/item');
-const List = require('../models/list');
+const PersonalList = require('../models/personallist');
 const MasterList = require('../models/masterlist');
 const { findOneAndDelete } = require('../models/item');
 
@@ -14,7 +14,7 @@ router.get('/testing', (req, res) => {
 // SHOW All your Lits
 router.get('/', (req, res) => {
   if(req.user){
-    List.find({author: req.user._id}, (err, foundList) => {
+    PersonalList.find({author: req.user._id}, (err, foundList) => {
       if(foundList){
         res.render('landing', {list: foundList})
       } else {
@@ -27,19 +27,35 @@ router.get('/', (req, res) => {
 });
 
 // UPDATE LISTS WITH ITEMS
-router.put('/', (req, res) => { 
-  MasterList.findOne({items: req.body.item}, (err, foundList) => { // Look for item in the Master list available to all users.
-    if(err){
-      console.log(err)
-    } else {
-      if(!foundList){ // If no master list is found, than user creates one
-        res.render('createList', {item: req.body.item});
-      } else if(foundList){ // If a master list has the item in it
-        List.findOne({name: foundList.name, author: req.user._id}, (err, foundPersonalList) => { // Check to see if there is already a personal list with the same category name
+router.put('/', (req, res) => {
+  const newItem = req.body.item;
+  let foundMatch = false; // Init match Boolean
+  MasterList.find({}, (err, allLists) => { //Lookup all lists  
+    allLists.forEach((list) => {
+      if(foundMatch === true){ // Break if match has already been found
+        return;
+      }
+      list.items.forEach((item) => {
+        if(newItem.includes(item)){ //if item is part of new item
+          foundMatch = true; // set boolean so loop can break
+          newListName = list.name;; // set the list name to be the list name that     matched the item
+        }
+      });
+    });
+
+    MasterList.findOne({$or: [
+      {items: newItem},
+      {name: newListName}
+    ]}, 
+    (err, foundList) => { // Look for item in the Master list available to all users.
+      if(err){
+        console.log(err)
+      } else if(foundList){
+        PersonalList.findOne({name: foundList.name, author: req.user._id}, (err, foundPersonalList) => { // Check to see if there is already a personal list with the same category name
           if(err){
             console.log(err);
           } else if(foundPersonalList){ // If there is already a personal list, push the item into the items array of that list and redirect to home.
-            List.findByIdAndUpdate(foundPersonalList._id, {$push: {items: req.body.item}}, (err, list)=> {
+            PersonalList.findByIdAndUpdate(foundPersonalList._id, {$push: {items: newItem}}, (err, list)=> {
               if(err){
                 console.log(err);
               } else {
@@ -47,17 +63,19 @@ router.put('/', (req, res) => {
               }
             });
           } else { // Otherwise create a brand new list with the item in it.
-              List.create({
+              PersonalList.create({
                 name: foundList.name,
-                items: [req.body.item],
+                items: [newItem],
                 author: req.user._id
               });
               res.redirect('/');
           } 
         });
+      } else {
+        res.render('createList', {item: req.body.item});
       }
-    }
-  });
+    });
+  });  
 });
 
 //CREATE LIST
@@ -87,19 +105,19 @@ router.put('/createList', (req, res) => {
             } 
           });   
       } // And then check to see if you already have a personal list of that type
-      List.findOne({name:req.body.list, author: req.user._id}, (err, foundPersonalList) => {
+      PersonalList.findOne({name:req.body.list, author: req.user._id}, (err, foundPersonalList) => {
       if(err){
         console.log(err);
       } else if(foundPersonalList){ // If it exists, push the new item into the items array
         console.log('PUTTING')
-        List.findOneAndUpdate({name:req.body.list, author: req.user._id}, {$push: {items:req.body.item}}, (err, item) => {
+        PersonalList.findOneAndUpdate({name:req.body.list, author: req.user._id}, {$push: {items:req.body.item}}, (err, item) => {
           if(err){
             console.log(err);
           }
         });
       } else { // If it doesn't exist, create a new list and push the item in the items array.
       console.log('NOT PUTTING');
-        List.create({
+        PersonalList.create({
           name: req.body.list,
           author: req.user._id,
           items: [req.body.item]
@@ -118,11 +136,11 @@ router.put('/itemchange', (req, res) => {
   const newItem = req.body.item;
   const oldItem = req.body.oldItem;
   
-  List.findOneAndUpdate({author: req.user.id, items: oldItem}, {$push: {items: newItem}}, (err, updatedList) => {
+  PersonalList.findOneAndUpdate({author: req.user.id, items: oldItem}, {$push: {items: newItem}}, (err, updatedList) => {
     if(err){
       console.log(err);
     } else {
-      List.findOneAndUpdate({author: req.user.id, items: oldItem}, {$pull: {items: oldItem}}, (err, updatedList) => {
+      PersonalList.findOneAndUpdate({author: req.user.id, items: oldItem}, {$pull: {items: oldItem}}, (err, updatedList) => {
         if(err){
           console.log(err);
         } else {
@@ -138,7 +156,7 @@ router.put('/itemchange', (req, res) => {
 router.put('/itemremove', (req, res) => {
   console.log(req.body.item);
   console.log(req.user.id);
-  List.findOneAndUpdate({author: req.user.id, items: req.body.item}, {$pull: {items: req.body.item}}, (err, updatedList) => {
+  PersonalList.findOneAndUpdate({author: req.user.id, items: req.body.item}, {$pull: {items: req.body.item}}, (err, updatedList) => {
     if(err){
       console.log(err);
     } else {
@@ -149,7 +167,7 @@ router.put('/itemremove', (req, res) => {
 
 //REMOVE PERSONAL LISTS DELETE ROUTE
 router.delete('/list', (req, res) => {
-  List.findOneAndDelete({author: req.user.id, name: req.body.name}, (err, deletedList) => {
+  PersonalList.findOneAndDelete({author: req.user.id, name: req.body.name}, (err, deletedList) => {
     if(err){
       console.log(err);
     } else {
