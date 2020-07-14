@@ -3,7 +3,7 @@ const express      = require('express'),
       
 
 // SCHEMA IMPORTS
-const Item = require('../models/item');
+// const Item = require('../models/item');
 const PersonalList = require('../models/personallist');
 const MasterList = require('../models/masterlist');
 const { findOneAndDelete } = require('../models/item');
@@ -189,7 +189,6 @@ router.delete('/list', (req, res) => {
 // MIDDLEWARES
 //=========================
 
-//=========================
 function toTitleCase(str) {
   return str.replace(
       /\w\S*/g,

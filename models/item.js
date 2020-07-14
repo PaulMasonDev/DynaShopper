@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 
-const ItemSchema = new mongoose.Schema({
-  name: [String]
-});
+// const ItemSchema = new mongoose.Schema({
+//   name: [String]
+// });
 
-module.exports = mongoose.model("Item", ItemSchema);
+// module.exports = mongoose.model("Item", ItemSchema);
