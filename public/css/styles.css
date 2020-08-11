@@ -50,3 +50,18 @@ h3 {
 .item-group form {
   display: inline;
 }
+
+form {
+  margin: 0 600px;
+}
+
+@media (max-width: 768px){
+  form{
+    margin: 0 30px;
+  }
+  #mobile-text {
+    font-size: 1.6rem;
+  }
+}
+
+
