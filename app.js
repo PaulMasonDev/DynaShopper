@@ -7,10 +7,13 @@ const express            = require('express'),
       flash              = require('connect-flash'),
       passport           = require('passport'),
       cookieParser       = require('cookie-parser'),
+      favicon            = require('express-favicon'),
       LocalStrategy      = require('passport-local');
 
 
 require('dotenv').config();
+
+app.use(favicon(__dirname + '/public/favicon.ico'));
 
 // Schema Imports
 const User = require('./models/user');
